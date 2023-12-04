@@ -9,7 +9,7 @@ use std::io::Write;
 use std::path::Path;
 use std::str;
 
-use bitflags::_core::str::from_utf8;
+use bitflags::__private::core::str::from_utf8;
 
 use lopdf::content::{Content, Operation};
 use lopdf::{Document, Object, ObjectId, StringFormat};
@@ -480,8 +480,8 @@ impl Form {
             .iter()
             .map(|object| {
                 object
-                    .as_f64()
-                    .unwrap_or(object.as_i64().unwrap_or(0) as f64) as f32
+                    .as_f32()
+                    .unwrap_or(object.as_i64().unwrap_or(0) as f32)
             })
             .collect::<Vec<_>>();
 

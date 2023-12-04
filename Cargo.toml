@@ -9,6 +9,6 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitflags = "^1.2"
-lopdf = "^0.25"
-thiserror = "1.0.31"
+bitflags = "2.4.1"
+lopdf = "0.31.0"
+thiserror = "1.0.50"
