@@ -143,31 +143,50 @@ impl Form {
     fn load_doc(mut doc: Document) -> Result<Self, LoadError> {
         let mut form_ids = Vec::new();
         let mut queue = VecDeque::new();
+
         // Block so borrow of doc ends before doc is moved into the result
         {
             doc.decompress();
 
-            let acroform = doc
-                .objects
-                .get_mut(
-                    &doc.trailer
-                        .get(b"Root")?
-                        .deref(&doc)?
-                        .as_dict()?
-                        .get(b"AcroForm")?
-                        .as_reference()?,
-                )
-                .ok_or(LoadError::NotAReference)?
-                .as_dict_mut()?;
+            // Dictionary representing the doc's form
+            let acroform = {
+                // Get the form root
+                let root = doc
+                    .trailer
+                    .get(b"Root")?
+                    .deref(&doc)?
+                    .as_dict()?
+                    .get(b"AcroForm")?
+                    .as_reference()?
+                    .to_owned();
 
-            let fields_list = acroform.get(b"Fields")?.as_array()?;
+                // Get a mutable reference to the form root,
+                // then convert it to a dictionary
+                doc.objects
+                    .get_mut(&root)
+                    .ok_or(LoadError::NotAReference)?
+                    .as_dict_mut()?
+                    .to_owned()
+            };
+
+            // Gets the list of fields in the form and handles the case
+            // where "Fields" is a reference
+            let fields_list = match acroform.get(b"Fields")? {
+                Object::Reference(ref_id) => {
+                    let obj = doc.get_object(*ref_id)?;
+                    obj.as_array()?
+                }
+                Object::Array(arr) => arr,
+                _ => return Err(LoadError::NotAReference),
+            };
+
             queue.append(&mut VecDeque::from(fields_list.clone()));
 
             // Iterate over the fields
             while let Some(objref) = queue.pop_front() {
                 let obj = objref.deref(&doc)?;
                 if let Object::Dictionary(ref dict) = *obj {
-                    // If the field has FT, it actually takes input.  Save this
+                    // If the field has FT, it actually takes input. Save this
                     if dict.get(b"FT").is_ok() {
                         form_ids.push(objref.as_reference().unwrap());
                     }
