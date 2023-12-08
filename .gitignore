@@ -3,3 +3,6 @@
 /*.gz
 /target/
 Cargo.lock
+
+# Output from example code.
+/examples/demo-form-output.pdf
