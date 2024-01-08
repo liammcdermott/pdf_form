@@ -36,10 +36,34 @@ pub fn is_read_only(field: &Dictionary) -> bool {
     flags.intersects(FieldFlags::READONLY)
 }
 
+pub fn set_read_only(field: &mut Dictionary, is_read_only: bool) {
+    let mut flags = FieldFlags::from_bits_truncate(get_field_flags(field));
+
+    if is_read_only {
+        flags.insert(FieldFlags::READONLY);
+    } else {
+        flags.remove(FieldFlags::READONLY);
+    }
+
+    field.set("Ff", Object::Integer(flags.bits() as i64));
+}
+
 pub fn is_required(field: &Dictionary) -> bool {
     let flags = FieldFlags::from_bits_truncate(get_field_flags(field));
 
     flags.intersects(FieldFlags::REQUIRED)
+}
+
+pub fn set_required(field: &mut Dictionary, is_required: bool) {
+    let mut flags = FieldFlags::from_bits_truncate(get_field_flags(field));
+
+    if is_required {
+        flags.insert(FieldFlags::REQUIRED);
+    } else {
+        flags.remove(FieldFlags::REQUIRED);
+    }
+
+    field.set("Ff", Object::Integer(flags.bits() as i64))
 }
 
 pub fn get_field_flags(field: &Dictionary) -> u32 {

@@ -748,6 +748,45 @@ impl Form {
         }
     }
 
+    /// Sets the read-only flag of the field at index `n`.
+    /// Returns a `ValueError` if the field is invalid.
+    ///
+    /// # Panics
+    /// Will panic if n is larger than the number of fields
+    pub fn set_read_only(&mut self, n: usize, is_read_only: bool) -> Result<(), ValueError> {
+        let field_id = self.form_ids.get(n).unwrap();
+
+        let field = match self.doc.objects.get_mut(field_id) {
+            Some(Object::Dictionary(ref mut dict)) => dict,
+            _ => return Err(ValueError::TypeMismatch),
+        };
+
+        // Set the field's readonly flag
+        // Assuming the `set_readonly_flag` function exists in utils module and modifies the field dictionary accordingly
+        utils::set_read_only(field, is_read_only);
+
+        Ok(())
+    }
+
+    /// Sets the required flag of the field at index `n`.
+    /// Returns a `ValueError` if the field is invalid.
+    ///
+    /// # Panics
+    /// Will panic if n is larger than the number of fields
+    pub fn set_required(&mut self, n: usize, is_required: bool) -> Result<(), ValueError> {
+        let field_id = self.form_ids.get(n).unwrap();
+
+        let field = match self.doc.objects.get_mut(field_id) {
+            Some(Object::Dictionary(ref mut dict)) => dict,
+            _ => return Err(ValueError::TypeMismatch),
+        };
+
+        // Set the field's required flag
+        utils::set_required(field, is_required);
+
+        Ok(())
+    }
+
     /// Saves the form to the specified path
     pub fn save<P: AsRef<Path>>(&mut self, path: P) -> Result<(), io::Error> {
         self.doc.save(path).map(|_| ())
